@@ -52,7 +52,7 @@ const GetStartedPage = () => {
       <main className="flex-1 p-4 md:p-8">
         <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6 md:p-8">
           <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-4">
-            Register and find all your tax data in a single secure platform!
+          "Your complete tax information, all in one secure place."
           </h2>
           <p className="text-red-500 text-sm mb-6">* Indicates mandatory fields</p>
 
