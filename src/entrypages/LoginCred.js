@@ -1,15 +1,36 @@
-import React, { useState } from 'react';
-import { LockClosedIcon, EyeIcon, EyeSlashIcon, UserIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
+import { LockClosedIcon, EyeIcon, EyeSlashIcon, UserIcon, InformationCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import Navbar from "../components/Navbar";
 // import Navbar from './Navbar'; // This is where you would import your Navbar component
+import loginimage from "../assests/LoginCredImage.png"
 
 const LoginCred = () => {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isConfirmed, setIsConfirmed] = useState(false);
+    const [captchaText, setCaptchaText] = useState('');
+    const [captchaInput, setCaptchaInput] = useState('');
+    const [captchaError, setCaptchaError] = useState('');
     
     // Get PAN from localStorage
     const userPAN = localStorage.getItem('userPAN') || 'CUOPJ2683J';
+
+    // Generate CAPTCHA text
+    const generateCaptcha = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < 6; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        setCaptchaText(result);
+        setCaptchaInput('');
+        setCaptchaError('');
+    };
+
+    // Generate CAPTCHA on component mount
+    useEffect(() => {
+        generateCaptcha();
+    }, []);
 
     const handlePasswordChange = (event) => {
         setPassword(event.target.value);
@@ -23,13 +44,29 @@ const LoginCred = () => {
         setIsConfirmed(event.target.checked);
     };
 
+    const handleCaptchaInputChange = (event) => {
+        setCaptchaInput(event.target.value);
+        setCaptchaError('');
+    };
+
+    const handleRefreshCaptcha = () => {
+        generateCaptcha();
+    };
+
     const handleContinue = () => {
+        if (captchaInput.toLowerCase() !== captchaText.toLowerCase()) {
+            setCaptchaError('Incorrect CAPTCHA. Please try again.');
+            return;
+        }
         console.log('Continuing with password:', password);
     };
 
     const handleBack = () => {
         console.log('Going back');
     };
+
+    // Check if all conditions are met for enabling continue button
+    const canContinue = isConfirmed && password.length > 0 && captchaInput.toLowerCase() === captchaText.toLowerCase();
 
     return (
         <div className="min-h-screen bg-gray-100 font-sans antialiased flex flex-col">
@@ -40,20 +77,19 @@ const LoginCred = () => {
         </nav>
       </div>
             <div className="flex-grow flex items-center justify-center">
-                <div className="flex bg-white rounded-lg shadow-lg p-8 w-11/12 max-w-4xl h-[500px]">
+                <div className="flex bg-white rounded-lg shadow-lg p-8 w-11/12 max-w-5xl h-[750px]">
                     {/* Left Section */}
                     <div className="w-1/2 pr-8 border-r border-gray-200 flex flex-col justify-center">
                         <div className="flex items-center mb-4">
                             <UserIcon className="h-10 w-10 text-gray-500 mr-2" />
                             <div>
                                 <h2 className="text-2xl font-bold">Login</h2>
-                                <p className="text-sm text-gray-500">PAN : {userPAN}</p>
                             </div>
                         </div>
 
                         <p className="mt-6 mb-2 text-sm font-semibold">Secure Access Message</p>
                         <div className="bg-gray-50 border border-gray-300 rounded p-3 mb-4">
-                            <p className="text-lg font-medium">PBEMS</p>
+                            <p className="text-lg font-medium">PAN: {userPAN}</p>
                         </div>
 
                         <div className="flex items-center mb-4">
@@ -64,13 +100,13 @@ const LoginCred = () => {
                                 className="form-checkbox h-6 w-6 text-blue-600 rounded"
                             />
                             <label className="ml-2 text-sm text-gray-700">
-                                Please confirm your secure access message displayed above *
+                                Please confirm your PAN displayed above *
                             </label>
                             <InformationCircleIcon className="h-4 w-4 text-gray-500 ml-1 cursor-pointer" />
                         </div>
 
-                        <p className="mb-2 text-sm">Enter password for your e-Filing account</p>
-                        <div className="relative mb-2">
+                        <p className="mb-2 text-sm">Enter password for your taxerpay account</p>
+                        <div className="relative mb-4">
                             <input
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
@@ -92,6 +128,36 @@ const LoginCred = () => {
                             </button>
                         </div>
 
+                        {/* CAPTCHA Section */}
+                        <div className="mb-4">
+                            <p className="mb-2 text-sm font-semibold">Enter CAPTCHA *</p>
+                            <div className="flex items-center space-x-3 mb-2">
+                                <div className="flex-1 bg-gray-100 border border-gray-300 rounded p-3 text-center">
+                                    <span className="text-xl font-mono font-bold tracking-wider text-gray-800 select-none">
+                                        {captchaText}
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleRefreshCaptcha}
+                                    className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
+                                    title="Refresh CAPTCHA"
+                                >
+                                    <ArrowPathIcon className="h-5 w-5" />
+                                </button>
+                            </div>
+                            <input
+                                type="text"
+                                value={captchaInput}
+                                onChange={handleCaptchaInputChange}
+                                placeholder="Enter CAPTCHA *"
+                                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            {captchaError && (
+                                <p className="text-red-500 text-sm mt-1">{captchaError}</p>
+                            )}
+                        </div>
+
                         <div className="text-blue-600 text-sm mb-6 flex items-center cursor-pointer hover:underline">
                             Forgot Password?
                             <InformationCircleIcon className="h-4 w-4 ml-1" />
@@ -99,9 +165,9 @@ const LoginCred = () => {
 
                         <button
                             onClick={handleContinue}
-                            disabled={!isConfirmed || password.length === 0}
+                            disabled={!canContinue}
                             className={`w-full py-3 mb-2 rounded font-semibold text-white transition duration-200 ${
-                                isConfirmed && password.length > 0 ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-300 cursor-not-allowed'
+                                canContinue ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-300 cursor-not-allowed'
                             }`}
                         >
                             Continue
@@ -119,13 +185,8 @@ const LoginCred = () => {
                     <div className="w-1/2 flex items-center justify-center">
                         <div className="text-center">
                             {/* You can import your image here */}
-                            {/* <img src="/path/to/your/image.png" alt="Secure Login" className="h-40 w-40 object-contain" /> */}
-                            <div className="relative">
-                                <div className="rounded-full h-36 w-36 bg-blue-100 flex items-center justify-center">
-                                    <LockClosedIcon className="h-20 w-20 text-blue-600" />
-                                </div>
-                                <p className="absolute bottom-0 left-1/2 -translate-x-1/2 text-3xl -mb-2 text-blue-600">*****</p>
-                            </div>
+                            <img src={loginimage} alt="Secure Login" className="h-full w-full object-contain" />
+                            
                             {/* Adjust the styling of the div above to match the lock image's appearance */}
                         </div>
                     </div>
