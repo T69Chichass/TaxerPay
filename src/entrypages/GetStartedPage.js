@@ -18,12 +18,12 @@ const GetStartedPage = () => {
       <Navbar className="sticky top-0 z-50"/>
      
 
-      {/* Sub-header / Breadcrumb */}
+      {/* Sub-header / Breadcrumb
       <div className="bg-white py-3 px-6 md:px-12 shadow-sm border-b border-gray-200">
         <nav className="text-sm text-gray-500">
           <a href="#" className="hover:underline">Home</a> &gt; <a href="#" className="hover:underline">Register</a>
         </nav>
-      </div>
+      </div> */}
 
       {/* Stepper */}
       <div className="bg-white py-6 px-4 md:px-12 flex justify-center items-center space-x-4 md:space-x-8 border-b border-gray-200">
