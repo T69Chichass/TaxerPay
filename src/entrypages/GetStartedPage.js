@@ -8,6 +8,7 @@ import { authAPI } from "../utils/eelApi";
 const GetStartedPage = () => {
   const [registerAs, setRegisterAs] = useState('taxpayer');
   const [pan, setPan] = useState('');
+  const [employeeId, setEmployeeId] = useState('');
 
   // Placeholder for the image on the right
   const imageUrl = "https://placehold.co/400x300/e0e0e0/333333?text=Your+Image+Here";
@@ -75,28 +76,34 @@ const GetStartedPage = () => {
                 </button>
                 <button
                   className={`flex-1 py-2 px-4 text-sm md:text-base font-medium transition-colors duration-200 ${
-                    registerAs === 'others'
+                    registerAs === 'admin'
                       ? 'bg-blue-600 text-white'
                       : 'bg-white text-blue-600 hover:bg-blue-50'
                   }`}
-                  onClick={() => setRegisterAs('others')}
+                  onClick={() => setRegisterAs('admin')}
                 >
-                  Others
+                  Admin
                 </button>
               </div>
 
               <div className="mb-6">
-                <label htmlFor="pan" className="block text-gray-700 text-sm font-medium mb-2">
-                  PAN <span className="text-red-500">*</span>
+                <label htmlFor="identifier" className="block text-gray-700 text-sm font-medium mb-2">
+                  {registerAs === 'taxpayer' ? 'PAN' : 'Employee ID'} <span className="text-red-500">*</span>
                 </label>
                 <div className="flex">
                   <input
                     type="text"
-                    id="pan"
+                    id="identifier"
                     className="flex-1 border border-gray-300 rounded-l-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={pan}
-                    onChange={(e) => setPan(e.target.value)}
-                    placeholder="Enter PAN"
+                    value={registerAs === 'taxpayer' ? pan : employeeId}
+                    onChange={(e) => {
+                      if (registerAs === 'taxpayer') {
+                        setPan(e.target.value);
+                      } else {
+                        setEmployeeId(e.target.value);
+                      }
+                    }}
+                    placeholder={registerAs === 'taxpayer' ? 'Enter PAN' : 'Enter Employee ID'}
                   />
                   <button className="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-r-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
                     Validate
@@ -107,8 +114,13 @@ const GetStartedPage = () => {
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-8">
                 <button className="flex-1 bg-blue-600 text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition-colors duration-200"
                     onClick={() => {
-                      // Store PAN in localStorage before navigating
-                      localStorage.setItem('userPAN', pan);
+                      // Store user type and identifier in localStorage before navigating
+                      localStorage.setItem('userType', registerAs);
+                      if (registerAs === 'taxpayer') {
+                        localStorage.setItem('userPAN', pan);
+                      } else {
+                        localStorage.setItem('userEmployeeId', employeeId);
+                      }
                       navigate('/logincred');
                     }}
                     >

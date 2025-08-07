@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, UserIcon, InformationCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import Navbar from "../components/Navbar";
-import { authAPI, utils } from "../utils/eelApi";
+import { authAPI, farmerAuthAPI, adminAuthAPI, utils } from "../utils/eelApi";
 import loginimage from "../assests/LoginCredImage.png"
 
 const LoginCred = () => {
@@ -12,8 +12,11 @@ const LoginCred = () => {
     const [captchaInput, setCaptchaInput] = useState('');
     const [captchaError, setCaptchaError] = useState('');
     
-    // Get PAN from localStorage
+    // Get user type and identifier from localStorage
+    const userType = localStorage.getItem('userType') || 'taxpayer';
     const userPAN = localStorage.getItem('userPAN') || 'CUOPJ2683J';
+    const userEmployeeId = localStorage.getItem('userEmployeeId') || 'ADMIN001';
+    const userIdentifier = userType === 'taxpayer' ? userPAN : userEmployeeId;
 
     // Generate CAPTCHA text
     const generateCaptcha = () => {
@@ -66,11 +69,19 @@ const LoginCred = () => {
         setLoginStatus(null);
 
         try {
-            // Attempt to login with the backend
-            const loginResult = await authAPI.login({
-                email: `${userPAN}@taxerpay.com`, // Using PAN as email for demo
-                password: password
-            });
+            // Attempt to login with the appropriate API based on user type
+            let loginResult;
+            if (userType === 'taxpayer') {
+                loginResult = await farmerAuthAPI.login({
+                    pan_card: userIdentifier,
+                    password: password
+                });
+            } else {
+                loginResult = await adminAuthAPI.login({
+                    employee_id: userIdentifier,
+                    password: password
+                });
+            }
 
             if (loginResult.success) {
                 // Store the token
@@ -119,7 +130,7 @@ const LoginCred = () => {
 
                         <p className="mt-6 mb-2 text-sm font-semibold">Secure Access Message</p>
                         <div className="bg-gray-50 border border-gray-300 rounded p-3 mb-4">
-                            <p className="text-lg font-medium">PAN: {userPAN}</p>
+                            <p className="text-lg font-medium">{userType === 'taxpayer' ? 'PAN' : 'Employee ID'}: {userIdentifier}</p>
                         </div>
 
                         <div className="flex items-center mb-4">
@@ -130,12 +141,12 @@ const LoginCred = () => {
                                 className="form-checkbox h-6 w-6 text-blue-600 rounded"
                             />
                             <label className="ml-2 text-sm text-gray-700">
-                                Please confirm your PAN displayed above *
+                                Please confirm your {userType === 'taxpayer' ? 'PAN' : 'Employee ID'} displayed above *
                             </label>
                             <InformationCircleIcon className="h-4 w-4 text-gray-500 ml-1 cursor-pointer" />
                         </div>
 
-                        <p className="mb-2 text-sm">Enter password for your taxerpay account</p>
+                        <p className="mb-2 text-sm">Enter password for your {userType === 'taxpayer' ? 'taxerpay' : 'admin'} account</p>
                         <div className="relative mb-4">
                             <input
                                 id="password"

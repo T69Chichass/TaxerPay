@@ -77,6 +77,122 @@ export const authAPI = {
   },
 };
 
+// Farmer-specific authentication functions
+export const farmerAuthAPI = {
+  // Register a new farmer
+  register: async (farmerData) => {
+    const response = await fetch('/api/farmer/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(farmerData),
+    });
+    return response.json();
+  },
+
+  // Login farmer with PAN and password
+  login: async (credentials) => {
+    const response = await fetch('/api/farmer/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
+    return response.json();
+  },
+
+  // Get farmer profile
+  getProfile: async (token) => {
+    const response = await fetch('/api/farmer/profile', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.json();
+  },
+
+  // Update farmer profile
+  updateProfile: async (token, profileData) => {
+    const response = await fetch('/api/farmer/profile', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(profileData),
+    });
+    return response.json();
+  },
+};
+
+// Admin-specific authentication functions
+export const adminAuthAPI = {
+  // Register a new admin
+  register: async (adminData) => {
+    const response = await fetch('/api/admin/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(adminData),
+    });
+    return response.json();
+  },
+
+  // Login admin with Employee ID and password
+  login: async (credentials) => {
+    const response = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
+    return response.json();
+  },
+
+  // Get admin profile
+  getProfile: async (token) => {
+    const response = await fetch('/api/admin/profile', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.json();
+  },
+
+  // Update admin profile
+  updateProfile: async (token, profileData) => {
+    const response = await fetch('/api/admin/profile', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(profileData),
+    });
+    return response.json();
+  },
+
+  // Get all farmers (admin only)
+  getAllFarmers: async (token) => {
+    const response = await fetch('/api/admin/farmers', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.json();
+  },
+};
+
 // Tax management functions
 export const taxAPI = {
   // Create a new tax record
