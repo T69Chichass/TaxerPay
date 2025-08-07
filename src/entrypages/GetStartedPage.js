@@ -9,10 +9,43 @@ const GetStartedPage = () => {
   const [registerAs, setRegisterAs] = useState('taxpayer');
   const [pan, setPan] = useState('');
   const [employeeId, setEmployeeId] = useState('');
+  const [validationStatus, setValidationStatus] = useState(null); // {success: true/false, message: string}
+  const [isValidating, setIsValidating] = useState(false);
+  const navigate = useNavigate();
 
-  // Placeholder for the image on the right
-  const imageUrl = "https://placehold.co/400x300/e0e0e0/333333?text=Your+Image+Here";
-    const navigate = useNavigate();
+  const handleValidate = async () => {
+    setIsValidating(true);
+    setValidationStatus(null);
+    try {
+      let url = '';
+      let value = '';
+      if (registerAs === 'taxpayer') {
+        value = pan.trim();
+        url = `/api/farmer/exists?pan_card=${encodeURIComponent(value)}`;
+      } else {
+        value = employeeId.trim();
+        url = `/api/admin/exists?employee_id=${encodeURIComponent(value)}`;
+      }
+      if (!value) {
+        setValidationStatus({ success: false, message: 'Please enter a value.' });
+        setIsValidating(false);
+        return;
+      }
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.exists) {
+        setValidationStatus({ success: true, message: `${registerAs === 'taxpayer' ? 'PAN' : 'Employee ID'} found!` });
+      } else {
+        setValidationStatus({ success: false, message: `${registerAs === 'taxpayer' ? 'PAN' : 'Employee ID'} not found.` });
+      }
+    } catch (e) {
+      setValidationStatus({ success: false, message: 'Error validating. Please try again.' });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const canContinue = validationStatus && validationStatus.success;
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans antialiased flex flex-col">
@@ -70,7 +103,7 @@ const GetStartedPage = () => {
                       ? 'bg-blue-600 text-white'
                       : 'bg-white text-blue-600 hover:bg-blue-50'
                   }`}
-                  onClick={() => setRegisterAs('taxpayer')}
+                  onClick={() => { setRegisterAs('taxpayer'); setValidationStatus(null); }}
                 >
                   Taxpayer
                 </button>
@@ -80,7 +113,7 @@ const GetStartedPage = () => {
                       ? 'bg-blue-600 text-white'
                       : 'bg-white text-blue-600 hover:bg-blue-50'
                   }`}
-                  onClick={() => setRegisterAs('admin')}
+                  onClick={() => { setRegisterAs('admin'); setValidationStatus(null); }}
                 >
                   Admin
                 </button>
@@ -97,6 +130,7 @@ const GetStartedPage = () => {
                     className="flex-1 border border-gray-300 rounded-l-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={registerAs === 'taxpayer' ? pan : employeeId}
                     onChange={(e) => {
+                      setValidationStatus(null);
                       if (registerAs === 'taxpayer') {
                         setPan(e.target.value);
                       } else {
@@ -105,10 +139,18 @@ const GetStartedPage = () => {
                     }}
                     placeholder={registerAs === 'taxpayer' ? 'Enter PAN' : 'Enter Employee ID'}
                   />
-                  <button className="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-r-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
-                    Validate
+                  <button
+                    type="button"
+                    className="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-r-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75"
+                    onClick={handleValidate}
+                    disabled={isValidating}
+                  >
+                    {isValidating ? 'Validating...' : 'Validate'}
                   </button>
                 </div>
+                {validationStatus && (
+                  <div className={`mt-2 text-sm ${validationStatus.success ? 'text-green-600' : 'text-red-600'}`}>{validationStatus.message}</div>
+                )}
               </div>
 
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-8">
@@ -123,6 +165,7 @@ const GetStartedPage = () => {
                       }
                       navigate('/logincred');
                     }}
+                    disabled={!canContinue}
                     >
                   Continue
                 </button>

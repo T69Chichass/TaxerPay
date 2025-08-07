@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, UserIcon, InformationCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import Navbar from "../components/Navbar";
 import { authAPI, farmerAuthAPI, adminAuthAPI, utils } from "../utils/eelApi";
+import { useNavigate } from 'react-router-dom';
 import loginimage from "../assests/LoginCredImage.png"
 
 const LoginCred = () => {
+    const navigate = useNavigate();
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isConfirmed, setIsConfirmed] = useState(false);
@@ -86,8 +88,27 @@ const LoginCred = () => {
             if (loginResult.success) {
                 // Store the token
                 utils.storeToken(loginResult.token);
+                
+                // Store user profile in localStorage
+                if (loginResult.user) {
+                    localStorage.setItem('farmer_profile', JSON.stringify(loginResult.user));
+                }
+                
                 setLoginStatus({ success: true, message: 'Login successful!' });
                 console.log('Login successful:', loginResult);
+                
+                // Redirect based on user type
+                if (userType === 'admin') {
+                    // Redirect to admin dashboard after a short delay
+                    setTimeout(() => {
+                        navigate('/admin-dashboard');
+                    }, 1500);
+                } else {
+                    // Redirect to farmer dashboard
+                    setTimeout(() => {
+                        navigate('/farmer-dashboard');
+                    }, 1500);
+                }
             } else {
                 setLoginStatus({ success: false, message: loginResult.message || 'Login failed' });
             }

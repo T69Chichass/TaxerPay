@@ -191,6 +191,19 @@ export const adminAuthAPI = {
     });
     return response.json();
   },
+
+  // Update farmer password (admin only)
+  updateFarmerPassword: async (token, farmerId, newPassword) => {
+    const response = await fetch(`/api/admin/farmers/${farmerId}/password`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password: newPassword }),
+    });
+    return response.json();
+  },
 };
 
 // Tax management functions
