@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, UserIcon, InformationCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import Navbar from "../components/Navbar";
-// import Navbar from './Navbar'; // This is where you would import your Navbar component
+import { authAPI, utils } from "../utils/eelApi";
 import loginimage from "../assests/LoginCredImage.png"
 
 const LoginCred = () => {
@@ -53,12 +53,42 @@ const LoginCred = () => {
         generateCaptcha();
     };
 
-    const handleContinue = () => {
+    const [loginStatus, setLoginStatus] = useState(null);
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+    const handleContinue = async () => {
         if (captchaInput.toLowerCase() !== captchaText.toLowerCase()) {
             setCaptchaError('Incorrect CAPTCHA. Please try again.');
             return;
         }
-        console.log('Continuing with password:', password);
+
+        setIsLoggingIn(true);
+        setLoginStatus(null);
+
+        try {
+            // Attempt to login with the backend
+            const loginResult = await authAPI.login({
+                email: `${userPAN}@taxerpay.com`, // Using PAN as email for demo
+                password: password
+            });
+
+            if (loginResult.success) {
+                // Store the token
+                utils.storeToken(loginResult.token);
+                setLoginStatus({ success: true, message: 'Login successful!' });
+                console.log('Login successful:', loginResult);
+            } else {
+                setLoginStatus({ success: false, message: loginResult.message || 'Login failed' });
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            setLoginStatus({ 
+                success: false, 
+                message: 'Connection error. Please check if the backend is running.' 
+            });
+        } finally {
+            setIsLoggingIn(false);
+        }
     };
 
     const handleBack = () => {
@@ -163,14 +193,25 @@ const LoginCred = () => {
                             <InformationCircleIcon className="h-4 w-4 ml-1" />
                         </div>
 
+                        {/* Login Status Display */}
+                        {loginStatus && (
+                            <div className={`mb-4 p-3 rounded text-sm ${
+                                loginStatus.success 
+                                    ? 'bg-green-100 text-green-800 border border-green-200' 
+                                    : 'bg-red-100 text-red-800 border border-red-200'
+                            }`}>
+                                {loginStatus.message}
+                            </div>
+                        )}
+
                         <button
                             onClick={handleContinue}
-                            disabled={!canContinue}
+                            disabled={!canContinue || isLoggingIn}
                             className={`w-full py-3 mb-2 rounded font-semibold text-white transition duration-200 ${
-                                canContinue ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-300 cursor-not-allowed'
+                                canContinue && !isLoggingIn ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-300 cursor-not-allowed'
                             }`}
                         >
-                            Continue
+                            {isLoggingIn ? 'Logging in...' : 'Continue'}
                         </button>
 
                         <button
